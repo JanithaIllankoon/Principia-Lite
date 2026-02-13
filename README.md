@@ -38,6 +38,7 @@ g++ -o physics_engine main.cpp src/*.cpp -std=c++17
 ./physics_engine
 
 ''' Roadmap
+[x] Core Engine Structure (Game Loop & State)
 [ ] Implement Gravity and Drag
 [ ] Circle-to-Circle Collision Resolution
 [ ] Impulse Resolution (Conservation of Momentum)

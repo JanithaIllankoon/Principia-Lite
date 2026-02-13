@@ -3,5 +3,5 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="Principia-Lite.vcxproj" />
+  <Project Path="Principia-Lite.vcxproj" Id="9560ed19-3553-4f82-ab0c-38c1b6b861ec" />
 </Solution>

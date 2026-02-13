@@ -33,12 +33,12 @@ const float DAMPING = 0.8f;         // Bounciness (1.0 = superball, 0.5 = wet sa
 void updatePhysics(std::vector<Particle>& particles) {
     for (auto& p : particles) {
         // A. APPLY FORCES (F = ma)
-        // Since Gravity is constant acceleration, we just add it.
-        // If we had wind, we would do: p.vx += wind_force * TIME_STEP;
+        // Since Gravity is constant acceleration,
+        // For the wind: p.vx += wind_force * TIME_STEP;
         p.vy += GRAVITY * TIME_STEP;
 
         // B. INTEGRATE (Semi-Implicit Euler)
-        // Notice: We use the NEW velocity (p.vx, p.vy) to update position.
+        // NEW velocity (p.vx, p.vy) to update position.
         p.x += p.vx * TIME_STEP;
         p.y += p.vy * TIME_STEP;
 
@@ -51,7 +51,7 @@ void updatePhysics(std::vector<Particle>& particles) {
             p.y = GROUND_LEVEL - p.radius;
 
             // 2. Reflect Velocity (The Bounce)
-            // We flip the Y velocity and reduce it by the damping factor.
+            // Flip the Y velocity and reduce it by the damping factor.
             p.vy = -p.vy * DAMPING;
 
             // Optional: Stop it if it's barely moving (Sleep threshold)
@@ -85,7 +85,7 @@ int main() {
             std::cout << "T=" << time << "s \t Y=" << world[0].y << "m \t Vy=" << world[0].vy << std::endl;
         }
 
-        // Slow down the loop so we can watch it (optional, mostly for effect)
+        // Slow down the loop (optional, mostly for effect)
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
 
