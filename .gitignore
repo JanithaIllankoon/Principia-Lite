@@ -1,0 +1,42 @@
+# ---------------------------------------------------------------------------
+# VISUAL STUDIO JUNK (The "Janitor" Section)
+# ---------------------------------------------------------------------------
+.vs/
+.vscode/
+x64/
+x86/
+Debug/
+Release/
+*.user
+*.suo
+*.opensdf
+*.sdf
+
+# ---------------------------------------------------------------------------
+# COMPILED GARBAGE (The "Trash" Section)
+# ---------------------------------------------------------------------------
+# Object files (intermediate compilation steps)
+*.obj
+*.o
+*.lo
+*.sla
+*.slo
+
+# Executables
+*.exe
+*.dll
+*.so
+*.dylib
+*.out
+*.app
+
+# Precompiled Headers (heavy files that speed up local builds)
+*.ipch
+*.pch
+*.gch
+
+# ---------------------------------------------------------------------------
+# OS TRASH
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
