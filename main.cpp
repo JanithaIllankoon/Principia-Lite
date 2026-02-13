@@ -3,92 +3,94 @@
 #include <thread>
 #include <chrono>
 #include <cmath>
+#include <string>
 
 // ---------------------------------------------------------
-// 1. THE PHYSICS OBJECT
+// 1. SETTINGS & CONSTANTS
+// ---------------------------------------------------------
+const int SCREEN_WIDTH = 40;     // Console width (columns)
+const int SCREEN_HEIGHT = 20;    // Console height (rows)
+const float GRAVITY = 9.81f;
+const float TIME_STEP = 0.033f;  // ~30 FPS (slower for ASCII)
+
+// ---------------------------------------------------------
+// 2. THE PHYSICS OBJECT
 // ---------------------------------------------------------
 struct Particle {
-    float x, y;         // Position
-    float vx, vy;       // Velocity
-    float radius;       // Size
-    float mass;         // Heaviness
+    float x, y;
+    float vx, vy;
 
-    // Constructor to make it easy to spawn particles
-    Particle(float startX, float startY, float startVx, float startVy, float r, float m)
-        : x(startX), y(startY), vx(startVx), vy(startVy), radius(r), mass(m) {
+    void update() {
+        vy += GRAVITY * TIME_STEP;
+        x += vx * TIME_STEP;
+        y += vy * TIME_STEP;
+
+        // Floor Collision (Bounce)
+        if (y >= SCREEN_HEIGHT - 1) {
+            y = SCREEN_HEIGHT - 1;
+            vy = -vy * 0.8f; // Lose 20% energy
+        }
+
+        // Wall Collisions (Left/Right)
+        if (x <= 0) {
+            x = 0;
+            vx = -vx * 0.8f;
+        }
+        if (x >= SCREEN_WIDTH - 1) {
+            x = SCREEN_WIDTH - 1;
+            vx = -vx * 0.8f;
+        }
     }
 };
 
 // ---------------------------------------------------------
-// 2. THE WORLD SETTINGS
+// 3. THE RENDERER
 // ---------------------------------------------------------
-const float GRAVITY = 9.81f;        // Earth gravity (m/s^2)
-const float TIME_STEP = 0.016f;     // 60 FPS (1.0 / 60.0)
-const float GROUND_LEVEL = 10.0f;   // The floor is at y = 10 meters
-const float DAMPING = 0.8f;         // Bounciness (1.0 = superball, 0.5 = wet sand)
+void draw(const Particle& p) {
+    // A. Clear the screen (Windows specific command)
+    system("cls");
 
-// ---------------------------------------------------------
-// 3. THE SOLVER (The "Why" Section)
-// ---------------------------------------------------------
-void updatePhysics(std::vector<Particle>& particles) {
-    for (auto& p : particles) {
-        // A. APPLY FORCES (F = ma)
-        // Since Gravity is constant acceleration,
-        // For the wind: p.vx += wind_force * TIME_STEP;
-        p.vy += GRAVITY * TIME_STEP;
+    // B. Create a buffer (a blank screen of spaces)
+    std::vector<std::string> screen(SCREEN_HEIGHT, std::string(SCREEN_WIDTH, ' '));
 
-        // B. INTEGRATE (Semi-Implicit Euler)
-        // NEW velocity (p.vx, p.vy) to update position.
-        p.x += p.vx * TIME_STEP;
-        p.y += p.vy * TIME_STEP;
+    // C. Draw the Floor
+    for (int i = 0; i < SCREEN_WIDTH; i++) screen[SCREEN_HEIGHT - 1][i] = '#';
 
-        // C. COLLISION DETECTION (Floor)
-        // If the bottom of the ball (y + radius) goes past the floor...
-        if (p.y + p.radius > GROUND_LEVEL) {
+    // D. Place the Ball
+    // We have to cast float (5.4) to int (5) to pick a grid slot
+    int px = (int)p.x;
+    int py = (int)p.y;
 
-            // 1. Teleport it back to the surface (Constraint Solving)
-            // This prevents "Tunneling" or sinking into the floor.
-            p.y = GROUND_LEVEL - p.radius;
-
-            // 2. Reflect Velocity (The Bounce)
-            // Flip the Y velocity and reduce it by the damping factor.
-            p.vy = -p.vy * DAMPING;
-
-            // Optional: Stop it if it's barely moving (Sleep threshold)
-            if (std::abs(p.vy) < 0.5f) p.vy = 0;
-        }
+    // Boundary check to prevent crashing if ball goes off screen
+    if (px >= 0 && px < SCREEN_WIDTH && py >= 0 && py < SCREEN_HEIGHT) {
+        screen[py][px] = 'O';
     }
+
+    // E. Print the frame
+    for (const auto& row : screen) {
+        std::cout << row << "\n";
+    }
+
+    std::cout << "Pos: (" << p.x << ", " << p.y << ")" << std::endl;
 }
 
 // ---------------------------------------------------------
-// 4. THE MAIN LOOP
+// 4. MAIN LOOP
 // ---------------------------------------------------------
 int main() {
-    // Create a world with one ball
-    // Spawning at (0, 0), moving Right at 2 m/s, Radius 0.5m, Mass 1kg
-    std::vector<Particle> world;
-    world.emplace_back(0.0f, 0.0f, 2.0f, 0.0f, 0.5f, 1.0f);
+    // Spawn ball in middle of screen
+    Particle ball = { 5.0f, 2.0f, 15.0f, 0.0f }; // x, y, vx, vy
 
-    std::cout << "--- SIMULATION START ---" << std::endl;
-    std::cout << "Time(s) \t Height(m) \t Velocity(m/s)" << std::endl;
+    while (true) {
+        // 1. Calculate
+        ball.update();
 
-    // Run for 300 frames (about 5 seconds)
-    for (int frame = 0; frame < 300; frame++) {
+        // 2. Draw
+        draw(ball);
 
-        // Run the physics math
-        updatePhysics(world);
-
-        // Render (Print to console)
-        // Only print every 10 frames so we don't spam the terminal
-        if (frame % 10 == 0) {
-            float time = frame * TIME_STEP;
-            std::cout << "T=" << time << "s \t Y=" << world[0].y << "m \t Vy=" << world[0].vy << std::endl;
-        }
-
-        // Slow down the loop (optional, mostly for effect)
-        std::this_thread::sleep_for(std::chrono::milliseconds(16));
+        // 3. Wait
+        std::this_thread::sleep_for(std::chrono::milliseconds(33));
     }
 
-    std::cout << "--- SIMULATION END ---" << std::endl;
     return 0;
 }
